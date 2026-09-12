@@ -1,44 +1,57 @@
 {
 	"name": "chordproject-editor",
-	"version": "0.1.11",
-	"main": "dist/chordproject-editor.bundle.js",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "A CodeMirror 6 based editor for ChordPro songs.",
+	"module": "dist/index.js",
+	"main": "dist/index.cjs",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"sideEffects": false,
 	"files": [
 		"dist"
 	],
-	"description": "A JavaScript library for editing ChordPro songs.",
 	"engines": {
-		"node": ">=4.2.4"
+		"node": ">=20.19.0"
 	},
 	"keywords": [
 		"chordpro",
 		"chordproject",
 		"editor",
 		"chord",
-		"guitar"
+		"guitar",
+		"codemirror"
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/chordproject/chordpro-editor"
+		"url": "https://github.com/chordproject/chordproject-editor"
 	},
 	"author": "ChordProject (http://chordproject.com)",
+	"license": "MIT",
 	"scripts": {
-		"start": "webpack serve --config webpack.dev.js",
-		"build": "webpack --config webpack.prod.js",
+		"dev": "lsof -tiTCP:5173 -sTCP:LISTEN | xargs -r kill 2>/dev/null; vite demo --port 5173 --strictPort",
+		"build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+		"build:demo": "vite build demo --outDir ../demo-dist",
 		"release": "npm run build && npm publish"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.12.10",
-		"@babel/preset-env": "^7.12.11",
-		"babel-loader": "^8.2.2",
-		"clean-webpack-plugin": "^3.0.0",
-		"html-webpack-plugin": "^4.5.1",
-		"webpack": "^5.18.0",
-		"webpack-cli": "^4.4.0",
-		"webpack-dev-middleware": "^4.1.0",
-		"webpack-dev-server": "^3.11.2",
-		"webpack-merge": "^5.7.3"
+		"tsup": "^8.3.5",
+		"typescript": "^5.7.2",
+		"vite": "^6.0.7"
 	},
 	"dependencies": {
-		"ace-builds": "^1.4.12"
+		"@codemirror/autocomplete": "^6.18.4",
+		"@codemirror/commands": "^6.8.0",
+		"@codemirror/language": "^6.10.8",
+		"@codemirror/lint": "^6.8.4",
+		"@codemirror/state": "^6.5.0",
+		"@codemirror/view": "^6.36.1",
+		"@lezer/highlight": "^1.2.1"
 	}
 }

@@ -1,13 +1,42 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="utf-8">
-    <title>ChordProject Editor</title>
-</head>
-
-<body>
-    <div id="chordProjectEditor"></div>
-</body>
-
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>chordproject-editor · Phase 1 smoke test</title>
+		<style>
+			body {
+				margin: 0;
+				font-family: system-ui, sans-serif;
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+			}
+			header {
+				padding: 8px 12px;
+				background: #1a1a1a;
+				color: white;
+				display: flex;
+				gap: 8px;
+				align-items: center;
+			}
+			#editor {
+				flex: 1;
+				min-height: 0;
+			}
+			button {
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<strong>chordproject-editor</strong>
+			<button id="toggle-theme">Toggle theme</button>
+			<button id="insert-chord">+ Chord</button>
+			<button id="show-snippets">Snippets</button>
+			<span id="status"></span>
+		</header>
+		<div id="editor"></div>
+		<script type="module" src="./main.ts"></script>
+	</body>
 </html>

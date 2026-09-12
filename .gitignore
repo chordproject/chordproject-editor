@@ -39,6 +39,16 @@ jspm_packages/
 # TypeScript v1 declaration files
 typings/
 
+# Build output
+dist/
+demo-dist/
+*.tsbuildinfo
+
+# Editor/OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
 # Optional npm cache directory
 .npm
 
