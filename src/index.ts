@@ -4,10 +4,13 @@ import { chordProAutocomplete, insertChord, openCompletionList } from './autocom
 import { basicSetup } from './extensions';
 import { chordProFolding } from './folding';
 import { chordPro } from './language';
-import { duplicateDirectiveLinter } from './linting';
+import { chordNotationLinter, duplicateDirectiveLinter, parserWarningLinter } from './linting';
+import { ChordNotationSuggestion, findChordNotationReplacements, getChordNotationSuggestions, normalizeChordNotationText } from './chordNotation';
 import { themeExtension, ThemeName } from './themes';
 
 export type { ThemeName } from './themes';
+export type { ChordNotationSuggestion } from './chordNotation';
+export { getChordNotationSuggestions, normalizeChordNotationText } from './chordNotation';
 
 export interface ChordProEditorOptions {
 	/** Element that will contain the editor. */
@@ -33,6 +36,10 @@ export interface ChordProEditor {
 	insertChord(): void;
 	/** Opens the completion list (chords or snippets) without needing a keyboard shortcut. */
 	openCompletionList(): void;
+	/** Returns grouped non-canonical chord notation suggestions for the current document. */
+	getChordNotationSuggestions(): ChordNotationSuggestion[];
+	/** Replaces every suggested chord notation in one undoable CodeMirror transaction. */
+	normalizeChordNotation(): ChordNotationSuggestion[];
 	focus(): void;
 	destroy(): void;
 }
@@ -60,6 +67,8 @@ export function createChordProEditor(options: ChordProEditorOptions): ChordProEd
 			chordPro(),
 			chordProFolding,
 			duplicateDirectiveLinter,
+			parserWarningLinter,
+			chordNotationLinter,
 			chordProAutocomplete(),
 			themeCompartment.of(themeExtension(options.theme ?? 'light')),
 			updateListener,
@@ -85,6 +94,18 @@ export function createChordProEditor(options: ChordProEditorOptions): ChordProEd
 		},
 		openCompletionList: () => {
 			openCompletionList(view);
+		},
+		getChordNotationSuggestions: () => getChordNotationSuggestions(view.state.doc.toString()),
+		normalizeChordNotation: () => {
+			const content = view.state.doc.toString();
+			const normalization = normalizeChordNotationText(content);
+			const replacements = findChordNotationReplacements(content);
+			if (replacements.length > 0) {
+				view.dispatch({
+					changes: replacements.map(({ from, to, replacement }) => ({ from, to, insert: `[${replacement}]` })),
+				});
+			}
+			return normalization.suggestions;
 		},
 		focus: () => view.focus(),
 		destroy: () => view.destroy(),

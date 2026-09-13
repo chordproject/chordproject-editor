@@ -37,6 +37,7 @@
 	"scripts": {
 		"dev": "lsof -tiTCP:5173 -sTCP:LISTEN | xargs -r kill 2>/dev/null; vite demo --port 5173 --strictPort",
 		"build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+		"test": "npm run build && node --test tests/chordNotation.test.mjs",
 		"build:demo": "vite build demo --outDir ../demo-dist",
 		"release": "npm run build && npm publish"
 	},
@@ -53,5 +54,8 @@
 		"@codemirror/state": "^6.5.0",
 		"@codemirror/view": "^6.36.1",
 		"@lezer/highlight": "^1.2.1"
+	},
+	"peerDependencies": {
+		"chordproject-parser": "^2.0.0"
 	}
 }

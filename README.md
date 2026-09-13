@@ -1,6 +1,6 @@
 # ChordPro Editor
 
-A CodeMirror 6 based editor for ChordPro songs. **~22 KB** (~6 KB gzipped) - about 19x smaller
+A CodeMirror 6 based editor for ChordPro songs. **~26 KB** (~7 KB gzipped) - about 16x smaller
 than the previous Ace-based build.
 
 **Part of [ChordProject](https://chordproject.com/)**
@@ -17,6 +17,11 @@ comments, tab blocks), aligned with the official
 > [Migrating from 0.1.x](#migrating-from-01x-ace-based) below.
 
 ## Usage
+
+### Requirements
+
+- Node.js 20.19.0 or newer for development and builds.
+- `chordproject-parser` version 2 or newer is a peer dependency and must be installed by the consuming application.
 
 ```sh
 $ npm i chordproject-editor
@@ -59,6 +64,8 @@ The returned `ChordProEditor` handle:
 | `setTheme('light' \| 'dark')` | Swaps the theme without recreating the editor. |
 | `insertChord()` | Inserts `"[]"` at the cursor (or wraps the selection) and opens chord suggestions - no keyboard shortcut needed, works from a button/tap. |
 | `openCompletionList()` | Opens the completion list (chords or snippets, depending on cursor position) without any keyboard shortcut. |
+| `getChordNotationSuggestions()` | Returns grouped suggestions for valid non-canonical chord spellings, such as `Asus` to `Asus4`. |
+| `normalizeChordNotation()` | Replaces all suggested spellings in one undoable CodeMirror transaction and returns the applied groups. |
 | `focus()` / `destroy()` | Focus the editor / tear it down and release its DOM node. |
 
 Unlike the previous Ace-based singleton, multiple independent `createChordProEditor()`
@@ -73,13 +80,25 @@ $ npm run dev
 
 Open http://localhost:5173/ to try it.
 
+## Tests
+
+```sh
+$ npm test
+```
+
+The test suite covers grouped chord-notation suggestions and safe normalization of slash chords,
+annotations, already canonical chords, and historical combined tokens.
+
 ## Features
 
 - Syntax highlighting: directives (known/custom/invalid), chords, comments, tab blocks, `{define:}`
 - Chord autocomplete (common chord vocabulary, boosted by chords already used in the song)
 - Directive snippets, expandable with `Tab` (see table below)
 - Folding for `{start_of_x}`/`{end_of_x}` blocks
+- Parser warnings displayed on their source line for malformed directives, invalid metadata, and malformed chords
 - Warns (non-blocking) when a "once per song" directive like `{title:}` or `{key:}` is repeated
+- Suggests canonical spellings for valid legacy abbreviations such as `Asus` to `Asus4`, `AM7` to `Amaj7`, and `D+` to `Daug`, with an individual replacement action
+- Exposes `getChordNotationSuggestions()` and `normalizeChordNotationText(content)` for hosts that want to preview or apply grouped normalization
 - No fixed keyboard shortcut requirement: chords and snippets suggest themselves as you type,
   and `insertChord()`/`openCompletionList()` work from a button/tap - useful since `Ctrl+Space`
   and its usual alternates are unreliable across OS/keyboard layouts

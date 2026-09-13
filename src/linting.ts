@@ -1,5 +1,7 @@
 import { Diagnostic, linter } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
+import { ChordProParser } from 'chordproject-parser';
+import { findChordNotationReplacements } from './chordNotation';
 
 // Directives chordproject-parser treats as singular (last one wins silently, see
 // ChordProParser.parseMetadataTag - title/subtitle/key/capo/duration/tempo/time/year/copyright
@@ -49,6 +51,49 @@ export const duplicateDirectiveLinter = linter((view: EditorView): Diagnostic[] 
 			to: line.from + match[0].length,
 			severity: 'warning',
 			message: `"${canonical}" ya se definió en la línea ${firstLine}; este valor la reemplaza.`,
+		});
+	}
+
+	return diagnostics;
+});
+
+/**
+ * Surfaces parser warnings next to the ChordPro source line. The client can still
+ * render its translated warning summary, while CodeMirror provides local feedback.
+ */
+export const parserWarningLinter = linter((view: EditorView): Diagnostic[] => {
+	const parser = new ChordProParser();
+	parser.parse(view.state.doc.toString());
+
+	return parser.warnings.flatMap((warning): Diagnostic[] => {
+		if (warning.lineNumber < 1 || warning.lineNumber > view.state.doc.lines) {
+			return [];
+		}
+		const line = view.state.doc.line(warning.lineNumber);
+		return [{
+			from: line.from,
+			to: line.to,
+			severity: 'warning',
+			message: warning.message,
+		}];
+	});
+});
+
+/** Suggests explicit, canonical ChordPro suffixes without changing valid input automatically. */
+export const chordNotationLinter = linter((view: EditorView): Diagnostic[] => {
+	const diagnostics: Diagnostic[] = [];
+	for (const replacement of findChordNotationReplacements(view.state.doc.toString())) {
+		diagnostics.push({
+			from: replacement.from,
+			to: replacement.to,
+			severity: 'info',
+			message: `Usa "${replacement.replacement}". ${replacement.reason}`,
+			actions: [{
+				name: `Reemplazar por ${replacement.replacement}`,
+				apply: (targetView, actionFrom, actionTo) => {
+					targetView.dispatch({ changes: { from: actionFrom, to: actionTo, insert: `[${replacement.replacement}]` } });
+				},
+			}],
 		});
 	}
 
