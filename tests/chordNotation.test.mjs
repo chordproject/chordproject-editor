@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getChordNotationSuggestions, normalizeChordNotationText } from '../dist/index.js';
+import { getChordCompletionPriorities, getChordNotationSuggestions, normalizeChordNotationText } from '../dist/index.js';
 
 test('groups repeated non-canonical chord notation', () => {
     assert.deepEqual(getChordNotationSuggestions('[Asus] [AM7] [Asus] [D+]'), [
@@ -30,4 +30,12 @@ test('normalizes chord tokens while preserving basses and unrelated bracket cont
 
     assert.equal(result.content, '[Asus4/E] [Amaj7] [Daug] [Asus4] [*Intro] [Am-G-F]');
     assert.equal(result.suggestions.reduce((total, item) => total + item.occurrences, 0), 3);
+});
+
+test('prioritizes the next chord from repeated local progressions', () => {
+    const content = '[F]Uno [Gm]dos [Bb]tres [C]cuatro\n[F]Uno [Gm]dos [Bb][';
+    const priorities = getChordCompletionPriorities(content, content.length);
+
+    assert.equal(priorities.get('C'), 11_000);
+    assert.equal(priorities.get('F') ?? 0, 0);
 });

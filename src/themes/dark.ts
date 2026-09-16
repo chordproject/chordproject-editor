@@ -19,7 +19,14 @@ const editorTheme = EditorView.theme(
 			borderLeftColor: 'var(--color-neutral-100, #f4f4f5)',
 		},
 		'&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
-			backgroundColor: 'color-mix(in oklch, var(--color-primary-600, #2563eb) 35%, transparent)',
+			backgroundColor: 'color-mix(in oklch, var(--color-primary-400, #60a5fa) 88%, transparent) !important',
+		},
+		'&.cm-focused .cm-content:focus::selection, &.cm-focused .cm-content .cm-line::selection': {
+			backgroundColor: 'color-mix(in oklch, var(--color-primary-400, #60a5fa) 54%, transparent) !important',
+			color: 'inherit !important',
+		},
+		'.cm-selectionLayer .cm-selectionBackground': {
+			boxShadow: 'inset 0 -2px 0 var(--color-primary-200, #bfdbfe)',
 		},
 		'.cm-activeLine': {
 			backgroundColor: 'var(--color-neutral-800, #27272a)',
@@ -31,6 +38,13 @@ const editorTheme = EditorView.theme(
 		},
 		'.cm-activeLineGutter': {
 			backgroundColor: 'var(--color-neutral-800, #27272a)',
+		},
+		'.cm-completionIcon-chord-used + .cm-completionLabel': {
+			color: 'var(--color-primary-300, #93c5fd)',
+			fontWeight: '600',
+		},
+		'.cm-tooltip-autocomplete > ul > li[aria-selected="true"] .cm-completionIcon-chord-used + .cm-completionLabel': {
+			color: 'var(--color-white, #ffffff)',
 		},
 	},
 	{ dark: true }

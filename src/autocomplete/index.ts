@@ -12,10 +12,15 @@ import { CHORDPRO_SNIPPETS } from './snippets';
 const completeSnippets = completeFromList(CHORDPRO_SNIPPETS);
 
 function chordProCompletionSource(context: CompletionContext) {
-	return chordCompletionSource(context) ?? completeSnippets(context);
+	const chordCompletions = chordCompletionSource(context);
+	if (chordCompletions) return chordCompletions;
+
+	// Directive names overlap ordinary lyrics (for example, "t" suggests "title"). Keep
+	// snippets behind the explicit toolbar command instead of interrupting normal writing.
+	return context.explicit ? completeSnippets(context) : null;
 }
 
-/** Chord suggestions inside "[...]", plus directive snippets everywhere else. */
+/** Chord suggestions inside "[...]", plus explicitly requested directive snippets. */
 export function chordProAutocomplete(): Extension {
 	return autocompletion({ override: [chordProCompletionSource], activateOnTyping: true });
 }

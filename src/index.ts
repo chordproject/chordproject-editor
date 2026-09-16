@@ -1,6 +1,7 @@
 import { Compartment, EditorState, Extension } from '@codemirror/state';
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import { chordProAutocomplete, insertChord, openCompletionList } from './autocomplete';
+export { getChordCompletionPriorities } from './autocomplete/chords';
 import { basicSetup } from './extensions';
 import { chordProFolding } from './folding';
 import { chordPro } from './language';

@@ -2,6 +2,7 @@ import { EditorState, Extension } from '@codemirror/state';
 import {
 	EditorView,
 	keymap,
+	inputHandler,
 	highlightActiveLine,
 	highlightSpecialChars,
 	drawSelection,
@@ -32,6 +33,20 @@ function chordAwareCompletion(view: EditorView): boolean {
 	return isInsideChordBrackets(view) ? startCompletion(view) : insertChord(view);
 }
 
+// Keymaps do not receive every international keyboard or touch text-input event. Intercept the
+// actual insertion too, so any typed "[" always becomes a complete ChordPro token.
+const chordBracketInputHandler = EditorView.inputHandler.of((view, from, to, text) => {
+	if (text !== '[') return false;
+
+	const selected = view.state.sliceDoc(from, to);
+	view.dispatch({
+		changes: { from, to, insert: `[${selected}]` },
+		selection: { anchor: from + 1 + selected.length },
+	});
+	startCompletion(view);
+	return true;
+});
+
 // Editing behavior shared by every instance.
 export function basicSetup(): Extension[] {
 	return [
@@ -43,8 +58,12 @@ export function basicSetup(): Extension[] {
 		drawSelection(),
 		bracketMatching(),
 		closeBrackets(),
+		chordBracketInputHandler,
 		EditorState.allowMultipleSelections.of(true),
 		keymap.of([
+			// Insert a complete ChordPro token before opening suggestions so an unfinished "["
+			// is never momentarily interpreted as invalid song content.
+			{ key: '[', run: insertChord },
 			...closeBracketsKeymap,
 			...defaultKeymap,
 			...historyKeymap,
@@ -53,6 +72,7 @@ export function basicSetup(): Extension[] {
 			// Override completionKeymap's Ctrl-Space/Option-`/Option-i (same keys, listed first so
 			// they take precedence) to be chord-aware instead of plain startCompletion.
 			{ key: 'Ctrl-Space', run: chordAwareCompletion },
+			{ mac: 'Cmd-Shift-Space', run: chordAwareCompletion },
 			{ mac: 'Alt-`', run: chordAwareCompletion },
 			{ mac: 'Alt-i', run: chordAwareCompletion },
 			...completionKeymap,
