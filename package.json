@@ -33,7 +33,7 @@
 		"url": "https://github.com/chordproject/chordproject-editor"
 	},
 	"author": "ChordProject (http://chordproject.com)",
-	"license": "MIT",
+	"license": "AGPL-3.0-only",
 	"scripts": {
 		"dev": "lsof -tiTCP:5173 -sTCP:LISTEN | xargs -r kill 2>/dev/null; vite demo --port 5173 --strictPort",
 		"build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",

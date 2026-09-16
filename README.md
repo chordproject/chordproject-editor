@@ -147,4 +147,4 @@ This project welcomes contributions of all types. If you find any bug or want so
 Join the community and chat with us on **[Discord](https://discord.gg/ZQAgwBC9c8)**
 
 ## License
-[MIT License](LICENSE)
+[GNU Affero General Public License v3.0](LICENSE)
