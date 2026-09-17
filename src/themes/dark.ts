@@ -46,6 +46,24 @@ const editorTheme = EditorView.theme(
 		'.cm-tooltip-autocomplete > ul > li[aria-selected="true"] .cm-completionIcon-chord-used + .cm-completionLabel': {
 			color: 'var(--color-white, #ffffff)',
 		},
+		'.cm-lintRange-info': {
+			backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"6\" height=\"3\"%3E%3Cpath d=\"m0 2.5 l2 -1.5 l1 0 l2 1.5 l1 0\" stroke=\"%23f87171\" fill=\"none\" stroke-width=\"1\"/%3E%3C/svg%3E") !important',
+			backgroundSize: '6px 3px',
+			backgroundPosition: 'left bottom',
+			backgroundRepeat: 'no-repeat',
+		},
+		'.cm-lintRange-warning': {
+			backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"6\" height=\"3\"%3E%3Cpath d=\"m0 2.5 l2 -1.5 l1 0 l2 1.5 l1 0\" stroke=\"%23fcd34d\" fill=\"none\" stroke-width=\"1\"/%3E%3C/svg%3E") !important',
+			backgroundSize: '6px 3px',
+			backgroundPosition: 'left bottom',
+			backgroundRepeat: 'no-repeat',
+		},
+		'.cm-lintRange-error': {
+			backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"6\" height=\"3\"%3E%3Cpath d=\"m0 2.5 l2 -1.5 l1 0 l2 1.5 l1 0\" stroke=\"%23f87171\" fill=\"none\" stroke-width=\"1\"/%3E%3C/svg%3E") !important',
+			backgroundSize: '6px 3px',
+			backgroundPosition: 'left bottom',
+			backgroundRepeat: 'no-repeat',
+		},
 	},
 	{ dark: true }
 );
