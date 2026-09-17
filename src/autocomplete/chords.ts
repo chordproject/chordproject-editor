@@ -93,11 +93,7 @@ function buildOptions(used: Map<string, number>, priorities: Map<string, number>
 	return [...options.values()];
 }
 
-/**
- * Suggests chords while typing inside "[...]". Unlike the legacy Ace chordFinder (which only
- * knew about chords already used in the song, so a brand new song had nothing to suggest), this
- * always offers the full common chord vocabulary too - useful from the very first chord.
- */
+/** Suggests chords while typing inside "[...]", including common chords from the first chord. */
 export function chordCompletionSource(context: CompletionContext): CompletionResult | null {
 	const match = context.matchBefore(/\[[^\]\n]*/);
 	if (!match || (match.from === match.to && !context.explicit)) return null;

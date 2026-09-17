@@ -1,7 +1,6 @@
 import { foldService } from '@codemirror/language';
 
-// Same regexes as the legacy Ace fold mode (legacy-ace/src/mode-chordpro.js), ported to CM6's
-// line-based foldService. "so(v|b|c|t)" / "start_of_x" pairs with "eo(v|b|c|t)" / "end_of_x".
+// Recognize both abbreviated and long-form ChordPro section markers for line-based folding.
 const START_RE = /\{(so(?<name>v|b|c|t)|start_of_(?<longname>[^\s:}]+))(?:[: ][^}]*)?\}/i;
 const END_RE = /\{(eo(?<name>v|b|c|t)|end_of_(?<longname>[^\s:}]+))\}/i;
 

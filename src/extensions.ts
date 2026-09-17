@@ -76,8 +76,7 @@ export function basicSetup(): Extension[] {
 			{ mac: 'Alt-`', run: chordAwareCompletion },
 			{ mac: 'Alt-i', run: chordAwareCompletion },
 			...completionKeymap,
-			// Tab accepts a completion/snippet field when the popup is open, same as the
-			// legacy Ace editor's snippet behavior.
+			// Tab accepts a completion/snippet field when the popup is open.
 			{
 				key: 'Tab',
 				preventDefault: true,

@@ -1,9 +1,7 @@
 import { Completion, snippetCompletion } from '@codemirror/autocomplete';
 
-// Ported from legacy-ace/src/snippets-chordpro.js, with the column_break/comment_box
-// short-name mix-up fixed (see language/tokens.ts). Directives only useful for print styling
-// (fonts/colours/etc.), {transpose} (superseded by our own transpose feature) and {chord}
-// (superseded by the click-to-view chord diagram feature) are intentionally left out.
+// These snippets cover commonly used directives; print-only directives and features handled by
+// the client, such as transposition and chord diagrams, are intentionally left out.
 export const CHORDPRO_SNIPPETS: readonly Completion[] = [
 	snippetCompletion('{album: ${value}}', { label: 'album', type: 'directive' }),
 	snippetCompletion('{arranger: ${value}}', { label: 'arranger', type: 'directive' }),

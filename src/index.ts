@@ -45,10 +45,7 @@ export interface ChordProEditor {
 	destroy(): void;
 }
 
-/**
- * Creates a standalone ChordPro editor instance. Unlike the previous Ace-based
- * implementation, multiple independent instances can coexist on the same page.
- */
+/** Creates a standalone ChordPro editor instance. */
 export function createChordProEditor(options: ChordProEditorOptions): ChordProEditor {
 	const themeCompartment = new Compartment();
 

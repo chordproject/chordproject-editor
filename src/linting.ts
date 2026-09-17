@@ -1,6 +1,6 @@
 import { Diagnostic, linter } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
-import { ChordProParser } from 'chordproject-parser';
+import { ChordProParser } from '@chordproject/parser';
 import { findChordNotationReplacements } from './chordNotation';
 
 // Directives chordproject-parser treats as singular (last one wins silently, see

@@ -1,5 +1,5 @@
 {
-	"name": "chordproject-editor",
+	"name": "@chordproject/editor",
 	"version": "1.0.0",
 	"type": "module",
 	"description": "A CodeMirror 6 based editor for ChordPro songs.",
@@ -56,6 +56,6 @@
 		"@lezer/highlight": "^1.2.1"
 	},
 	"peerDependencies": {
-		"chordproject-parser": "^2.0.0"
+		"@chordproject/parser": "^1.0.0"
 	}
 }

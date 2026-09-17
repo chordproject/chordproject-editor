@@ -1,34 +1,29 @@
 # ChordPro Editor
 
-A CodeMirror 6 based editor for ChordPro songs. **~26 KB** (~7 KB gzipped) - about 16x smaller
-than the previous Ace-based build.
+A CodeMirror 6 based editor for ChordPro songs. **~26 KB** (~7 KB gzipped).
 
 **Part of [ChordProject](https://chordproject.com/)**
 
 ## Overview
 
-A from-scratch rewrite of this library (previously built on the Ace editor) using
-[CodeMirror 6](https://codemirror.net/). It highlights ChordPro syntax (directives, chords,
-comments, tab blocks), aligned with the official
+A CodeMirror 6 editor that highlights ChordPro syntax (directives, chords, comments, tab blocks),
+aligned with the official
 [ChordPro directives](https://www.chordpro.org/chordpro/chordpro-directives/) and
 [chord](https://www.chordpro.org/chordpro/chordpro-chords/) specification.
-
-> **Coming from 0.1.x (Ace-based)?** The public API changed completely - see
-> [Migrating from 0.1.x](#migrating-from-01x-ace-based) below.
 
 ## Usage
 
 ### Requirements
 
 - Node.js 20.19.0 or newer for development and builds.
-- `chordproject-parser` version 2 or newer is a peer dependency and must be installed by the consuming application.
+- `@chordproject/parser` version 1 or newer is a peer dependency and must be installed by the consuming application.
 
 ```sh
-$ npm i chordproject-editor
+$ npm i @chordproject/editor
 ```
 
 ```ts
-import { createChordProEditor } from 'chordproject-editor';
+import { createChordProEditor } from '@chordproject/editor';
 
 const editor = createChordProEditor({
 	parent: document.querySelector('#editor'),
@@ -68,8 +63,7 @@ The returned `ChordProEditor` handle:
 | `normalizeChordNotation()` | Replaces all suggested spellings in one undoable CodeMirror transaction and returns the applied groups. |
 | `focus()` / `destroy()` | Focus the editor / tear it down and release its DOM node. |
 
-Unlike the previous Ace-based singleton, multiple independent `createChordProEditor()`
-instances can coexist on the same page.
+Multiple independent `createChordProEditor()` instances can coexist on the same page.
 
 ## Demo
 
@@ -131,14 +125,6 @@ Type the snippet and press `Tab` to expand it.
 | `tab` / `sot` / `eot` | Tab block with a 6-string template / `{start_of_tab}` / `{end_of_tab}` |
 | `define` or `d` | `{define: Am base-fret 1 frets 0 0 0 0 0 0 fingers 0 0 0 0 0 0}` |
 | `[` | Inserts a chord (`[Am]`) |
-
-## Migrating from 0.1.x (Ace-based)
-
-The library was rewritten from scratch on CodeMirror 6. The old Ace-based singleton API
-(`ChordProjectEditor.Main.init()` / `.getEditor()` / `.doSetTheme()`) is gone, replaced by
-`createChordProEditor()` (see [API](#api) above). There is no automatic migration - update your
-integration code to call `createChordProEditor({ parent, doc, theme, onChange })` and use the
-returned handle's methods instead.
 
 ## Contributing
 

@@ -2,8 +2,8 @@ import { EditorView } from '@codemirror/view';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
 
-// Colors mirror chordproject-client's actual design tokens (src/styles/components/editor.css,
-// .ace-cobalt rules) via CSS custom properties, so the editor matches the live app's dark theme
+// Colors mirror chordproject-client's actual design tokens via CSS custom properties, so the
+// editor matches the live app's dark theme
 // instead of a generic hardcoded palette. Fallback values only apply outside that app (e.g. this
 // package's standalone demo), approximating Tailwind's zinc/blue/red scales.
 const editorTheme = EditorView.theme(
