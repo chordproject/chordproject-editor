@@ -1,16 +1,19 @@
 import { Compartment, EditorState, Extension } from '@codemirror/state';
 import { EditorView, ViewUpdate } from '@codemirror/view';
+import { openSearchPanel, search } from '@codemirror/search';
 import { chordProAutocomplete, insertChord, openCompletionList } from './autocomplete';
 export { getChordCompletionPriorities } from './autocomplete/chords';
 import { basicSetup } from './extensions';
 import { chordProFolding } from './folding';
 import { chordPro } from './language';
-import { chordNotationLinter, duplicateDirectiveLinter, parserWarningLinter } from './linting';
+import { chordNotationLinter, duplicateDirectiveLinter, parserWarningLinter, unclosedSectionLinter } from './linting';
 import { ChordNotationSuggestion, findChordNotationReplacements, getChordNotationSuggestions, normalizeChordNotationText } from './chordNotation';
 import { themeExtension, ThemeName } from './themes';
+import { createSearchPanel, SearchLabels } from './search-panel';
 
 export type { ThemeName } from './themes';
 export type { ChordNotationSuggestion } from './chordNotation';
+export type { SearchLabels } from './search-panel';
 export { getChordNotationSuggestions, normalizeChordNotationText } from './chordNotation';
 
 export interface ChordProEditorOptions {
@@ -25,6 +28,7 @@ export interface ChordProEditorOptions {
 	onChange?: (value: string) => void;
 	onFocus?: () => void;
 	onBlur?: () => void;
+	searchLabels?: () => SearchLabels;
 }
 
 export interface ChordProEditor {
@@ -37,6 +41,8 @@ export interface ChordProEditor {
 	insertChord(): void;
 	/** Opens the completion list (chords or snippets) without needing a keyboard shortcut. */
 	openCompletionList(): void;
+	/** Opens CodeMirror's search and replace panel. */
+	openSearch(): void;
 	/** Returns grouped non-canonical chord notation suggestions for the current document. */
 	getChordNotationSuggestions(): ChordNotationSuggestion[];
 	/** Replaces every suggested chord notation in one undoable CodeMirror transaction. */
@@ -66,9 +72,11 @@ export function createChordProEditor(options: ChordProEditorOptions): ChordProEd
 			chordProFolding,
 			duplicateDirectiveLinter,
 			parserWarningLinter,
+			unclosedSectionLinter,
 			chordNotationLinter,
 			chordProAutocomplete(),
 			themeCompartment.of(themeExtension(options.theme ?? 'light')),
+			search({ top: true, createPanel: (view) => createSearchPanel(view, options.searchLabels?.()) }),
 			updateListener,
 			...(options.extensions ?? []),
 		],
@@ -92,6 +100,9 @@ export function createChordProEditor(options: ChordProEditorOptions): ChordProEd
 		},
 		openCompletionList: () => {
 			openCompletionList(view);
+		},
+		openSearch: () => {
+			openSearchPanel(view);
 		},
 		getChordNotationSuggestions: () => getChordNotationSuggestions(view.state.doc.toString()),
 		normalizeChordNotation: () => {

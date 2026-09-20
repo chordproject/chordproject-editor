@@ -10,6 +10,7 @@ import {
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching, foldGutter, foldKeymap } from '@codemirror/language';
 import { lintGutter, lintKeymap } from '@codemirror/lint';
+import { searchKeymap } from '@codemirror/search';
 import {
 	acceptCompletion,
 	closeBrackets,
@@ -69,6 +70,7 @@ export function basicSetup(): Extension[] {
 			...historyKeymap,
 			...foldKeymap,
 			...lintKeymap,
+			...searchKeymap,
 			// Override completionKeymap's Ctrl-Space/Option-`/Option-i (same keys, listed first so
 			// they take precedence) to be chord-aware instead of plain startCompletion.
 			{ key: 'Ctrl-Space', run: chordAwareCompletion },

@@ -13,23 +13,25 @@ const editorTheme = EditorView.theme(
 			color: 'var(--color-neutral-100, #f4f4f5)',
 		},
 		'.cm-content': {
+			textDecoration: 'none',
 			caretColor: 'var(--color-neutral-100, #f4f4f5)',
 		},
 		'.cm-cursor, .cm-dropCursor': {
 			borderLeftColor: 'var(--color-neutral-100, #f4f4f5)',
 		},
 		'&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
-			backgroundColor: 'color-mix(in oklch, var(--color-primary-400, #60a5fa) 88%, transparent) !important',
+			backgroundColor: 'var(--color-primary-700, #1d4ed8) !important',
+			color: 'inherit !important',
 		},
 		'&.cm-focused .cm-content:focus::selection, &.cm-focused .cm-content .cm-line::selection': {
-			backgroundColor: 'color-mix(in oklch, var(--color-primary-400, #60a5fa) 54%, transparent) !important',
+			backgroundColor: 'var(--color-primary-700, #1d4ed8) !important',
 			color: 'inherit !important',
 		},
 		'.cm-selectionLayer .cm-selectionBackground': {
-			boxShadow: 'inset 0 -2px 0 var(--color-primary-200, #bfdbfe)',
+			boxShadow: 'none',
 		},
 		'.cm-activeLine': {
-			backgroundColor: 'var(--color-neutral-800, #27272a)',
+			backgroundColor: 'transparent',
 		},
 		'.cm-gutters': {
 			backgroundColor: 'var(--color-neutral-900, #18181b)',
@@ -39,11 +41,53 @@ const editorTheme = EditorView.theme(
 		'.cm-activeLineGutter': {
 			backgroundColor: 'var(--color-neutral-800, #27272a)',
 		},
+		'.chord-search-panel': {
+			borderBottomColor: 'var(--color-neutral-700, #3f3f46)',
+			backgroundColor: 'var(--color-neutral-900, #18181b)',
+			borderColor: 'var(--color-neutral-700, #3f3f46)',
+		},
+		'.chord-search-field input': {
+			backgroundColor: 'var(--color-neutral-800, #27272a)',
+			color: 'var(--color-neutral-100, #f4f4f5)',
+		},
+		'.chord-search-field': {
+			borderColor: 'var(--color-neutral-700, #3f3f46)',
+			backgroundColor: 'var(--color-neutral-800, #27272a)',
+		},
+		'.chord-search-input-with-options input': {
+			backgroundColor: 'transparent',
+		},
+		'.chord-search-button': {
+			borderColor: 'var(--color-neutral-700, #3f3f46)',
+			backgroundColor: 'var(--color-neutral-800, #27272a)',
+			color: 'var(--color-neutral-100, #f4f4f5)',
+		},
+		'.chord-search-button:hover': {
+			backgroundColor: 'var(--color-neutral-700, #3f3f46)',
+		},
+		'.chord-search-toggle-replace:hover, .chord-search-previous:hover, .chord-search-next:hover, .chord-search-close:hover': {
+			backgroundColor: 'var(--color-neutral-800, #27272a)',
+		},
+		'.chord-search-options': {
+			color: 'var(--color-neutral-300, #d4d4d8)',
+		},
+		'.chord-search-toggle.is-active': {
+			borderColor: 'var(--color-primary-400, #60a5fa)',
+			backgroundColor: 'var(--color-primary-950, #172554)',
+			color: 'var(--color-primary-200, #bfdbfe)',
+		},
 		'.cm-completionIcon-chord-used + .cm-completionLabel': {
 			color: 'var(--color-primary-300, #93c5fd)',
 			fontWeight: '600',
 		},
-		'.cm-tooltip-autocomplete > ul > li[aria-selected="true"] .cm-completionIcon-chord-used + .cm-completionLabel': {
+		'.cm-tooltip-autocomplete ul li[aria-selected] .cm-completionIcon-chord-used + .cm-completionLabel': {
+			color: 'var(--color-white, #ffffff)',
+		},
+		'.cm-tooltip-autocomplete ul li[aria-selected]': {
+			backgroundColor: 'var(--color-primary-700, #1d4ed8)',
+			color: 'var(--color-white, #ffffff)',
+		},
+		'.cm-tooltip-autocomplete ul li[aria-selected] .cm-completionLabel, .cm-tooltip-autocomplete ul li[aria-selected] .cm-completionDetail, .cm-tooltip-autocomplete ul li[aria-selected] .cm-completionMatchedText': {
 			color: 'var(--color-white, #ffffff)',
 		},
 		'.cm-lintRange-info': {

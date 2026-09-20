@@ -10,14 +10,22 @@ import { chordCompletionSource } from './chords';
 import { CHORDPRO_SNIPPETS } from './snippets';
 
 const completeSnippets = completeFromList(CHORDPRO_SNIPPETS);
+const QUICK_SNIPPET_PREFIXES = new Set(
+	CHORDPRO_SNIPPETS
+		.map((snippet) => snippet.label)
+		.filter((label) => label.length <= 3 && /^[a-z]+$/i.test(label))
+);
 
 function chordProCompletionSource(context: CompletionContext) {
 	const chordCompletions = chordCompletionSource(context);
 	if (chordCompletions) return chordCompletions;
 
-	// Directive names overlap ordinary lyrics (for example, "t" suggests "title"). Keep
-	// snippets behind the explicit toolbar command instead of interrupting normal writing.
-	return context.explicit ? completeSnippets(context) : null;
+	const word = context.matchBefore(/[a-z]+$/i);
+	const isQuickSnippet = word && QUICK_SNIPPET_PREFIXES.has(word.text.toLowerCase());
+
+	// Only the documented short prefixes open automatically. Full directive names remain behind
+	// the explicit toolbar command so ordinary lyrics are never interrupted by suggestions.
+	return context.explicit || isQuickSnippet ? completeSnippets(context) : null;
 }
 
 /** Chord suggestions inside "[...]", plus explicitly requested directive snippets. */

@@ -51,6 +51,7 @@
 		"@codemirror/commands": "^6.8.0",
 		"@codemirror/language": "^6.10.8",
 		"@codemirror/lint": "^6.8.4",
+		"@codemirror/search": "^6.7.2",
 		"@codemirror/state": "^6.5.0",
 		"@codemirror/view": "^6.36.1",
 		"@lezer/highlight": "^1.2.1"

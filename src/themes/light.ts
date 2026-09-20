@@ -13,23 +13,25 @@ const editorTheme = EditorView.theme(
 			color: 'var(--color-neutral-950, #09090b)',
 		},
 		'.cm-content': {
+			textDecoration: 'none',
 			caretColor: 'var(--color-neutral-950, #09090b)',
 		},
 		'.cm-cursor, .cm-dropCursor': {
 			borderLeftColor: 'var(--color-neutral-950, #09090b)',
 		},
 		'&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
-			backgroundColor: 'color-mix(in oklch, var(--color-primary-500, #3b82f6) 78%, transparent) !important',
+			backgroundColor: 'var(--color-primary-200, #bfdbfe) !important',
+			color: 'inherit !important',
 		},
 		'&.cm-focused .cm-content:focus::selection, &.cm-focused .cm-content .cm-line::selection': {
-			backgroundColor: 'color-mix(in oklch, var(--color-primary-500, #3b82f6) 52%, transparent) !important',
+			backgroundColor: 'var(--color-primary-200, #bfdbfe) !important',
 			color: 'inherit !important',
 		},
 		'.cm-selectionLayer .cm-selectionBackground': {
-			boxShadow: 'inset 0 -2px 0 var(--color-primary-700, #1d4ed8)',
+			boxShadow: 'none',
 		},
 		'.cm-activeLine': {
-			backgroundColor: 'var(--color-neutral-100, #f4f4f5)',
+			backgroundColor: 'transparent',
 		},
 		'.cm-gutters': {
 			backgroundColor: 'var(--color-neutral-50, #fafafa)',
@@ -43,7 +45,14 @@ const editorTheme = EditorView.theme(
 			color: 'var(--color-primary-700, #1d4ed8)',
 			fontWeight: '600',
 		},
-		'.cm-tooltip-autocomplete > ul > li[aria-selected="true"] .cm-completionIcon-chord-used + .cm-completionLabel': {
+		'.cm-tooltip-autocomplete ul li[aria-selected] .cm-completionIcon-chord-used + .cm-completionLabel': {
+			color: 'var(--color-white, #ffffff)',
+		},
+		'.cm-tooltip-autocomplete ul li[aria-selected]': {
+			backgroundColor: 'var(--color-primary-600, #2563eb)',
+			color: 'var(--color-white, #ffffff)',
+		},
+		'.cm-tooltip-autocomplete ul li[aria-selected] .cm-completionLabel, .cm-tooltip-autocomplete ul li[aria-selected] .cm-completionDetail, .cm-tooltip-autocomplete ul li[aria-selected] .cm-completionMatchedText': {
 			color: 'var(--color-white, #ffffff)',
 		},
 		'.cm-lintRange-info': {
@@ -63,6 +72,10 @@ const editorTheme = EditorView.theme(
 			backgroundSize: '6px 3px',
 			backgroundPosition: 'left bottom',
 			backgroundRepeat: 'no-repeat',
+		},
+		'.chord-search-panel': {
+			borderColor: 'var(--color-neutral-300, #d4d4d8)',
+			backgroundColor: 'var(--color-white, #ffffff)',
 		},
 	},
 	{ dark: false }

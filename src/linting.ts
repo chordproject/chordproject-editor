@@ -22,6 +22,18 @@ const SINGULAR_DIRECTIVES: Record<string, string> = {
 };
 
 const DIRECTIVE_LINE = /^\s*\{\s*([A-Za-z_][\w]*)\b/;
+const SECTION_STARTS: Record<string, string> = {
+	start_of_chorus: 'end_of_chorus',
+	soc: 'end_of_chorus',
+	chorus: 'end_of_chorus',
+	start_of_verse: 'end_of_verse',
+	sov: 'end_of_verse',
+	start_of_bridge: 'end_of_bridge',
+	sob: 'end_of_bridge',
+	start_of_tab: 'end_of_tab',
+	sot: 'end_of_tab',
+};
+const SECTION_ENDS = new Set(['end_of_chorus', 'eoc', 'end_of_verse', 'eov', 'end_of_bridge', 'eob', 'end_of_tab', 'eot']);
 
 /**
  * Warns (without blocking anything) when a "singular" directive like {title:} or {key:}
@@ -66,6 +78,9 @@ export const parserWarningLinter = linter((view: EditorView): Diagnostic[] => {
 	parser.parse(view.state.doc.toString());
 
 	return parser.warnings.flatMap((warning): Diagnostic[] => {
+		if (warning.code === 'empty_sheet') {
+			return [];
+		}
 		if (warning.lineNumber < 1 || warning.lineNumber > view.state.doc.lines) {
 			return [];
 		}
@@ -77,7 +92,122 @@ export const parserWarningLinter = linter((view: EditorView): Diagnostic[] => {
 			message: warning.message,
 		}];
 	});
-});
+}, { delay: 0 });
+
+/** Offers a one-click closing directive for sections left open while drafting. */
+export const unclosedSectionLinter = linter((view: EditorView): Diagnostic[] => {
+	const diagnostics: Diagnostic[] = [];
+	let openSection: { endDirective: string; lineFrom: number; lineTo: number; insertionAt: number; insertionTo: number } | null = null;
+	let sectionHasContent = false;
+
+	for (let lineNumber = 1; lineNumber <= view.state.doc.lines; lineNumber++) {
+		const line = view.state.doc.line(lineNumber);
+		const match = line.text.match(DIRECTIVE_LINE);
+		const directive = match?.[1].toLowerCase();
+
+		if (directive && SECTION_STARTS[directive]) {
+			if (openSection) {
+				openSection.insertionAt = line.from;
+				openSection.insertionTo = line.from;
+				diagnostics.push(sectionDiagnostic(openSection));
+			}
+			openSection = {
+				endDirective: SECTION_STARTS[directive],
+				lineFrom: line.from,
+				lineTo: line.to,
+				insertionAt: line.from,
+				insertionTo: line.from,
+			};
+			sectionHasContent = false;
+			continue;
+		}
+
+		if (directive && SECTION_ENDS.has(directive)) {
+			openSection = null;
+			sectionHasContent = false;
+			continue;
+		}
+
+		if (openSection && directive) {
+			openSection.insertionAt = line.from;
+			openSection.insertionTo = line.from;
+			diagnostics.push(sectionDiagnostic(openSection));
+			openSection = null;
+			sectionHasContent = false;
+			continue;
+		}
+
+		if (openSection && !line.text.trim()) {
+			const nextDirective = nextNonBlankDirective(view, lineNumber);
+			if (sectionHasContent) {
+				openSection.insertionAt = line.from;
+				openSection.insertionTo = nextDirective
+					? nextNonBlankDirectiveLine(view, lineNumber)
+					: line.from;
+				diagnostics.push(sectionDiagnostic(openSection));
+				openSection = null;
+				sectionHasContent = false;
+			}
+			continue;
+		}
+
+		if (openSection && lineNumber === view.state.doc.lines) {
+			openSection.insertionAt = view.state.doc.length;
+			openSection.insertionTo = view.state.doc.length;
+		}
+
+		if (openSection) {
+			sectionHasContent = true;
+		}
+	}
+
+
+function nextNonBlankDirective(view: EditorView, lineNumber: number): string | null {
+	const directiveLine = nextNonBlankDirectiveLine(view, lineNumber);
+	return directiveLine < view.state.doc.length
+		? view.state.doc.lineAt(directiveLine).text.match(DIRECTIVE_LINE)?.[1].toLowerCase() ?? null
+		: null;
+}
+
+function nextNonBlankDirectiveLine(view: EditorView, lineNumber: number): number {
+	for (let nextLineNumber = lineNumber + 1; nextLineNumber <= view.state.doc.lines; nextLineNumber++) {
+		const nextLine = view.state.doc.line(nextLineNumber);
+		if (!nextLine.text.trim()) {
+			continue;
+		}
+		if (nextLine.text.match(DIRECTIVE_LINE)) {
+			return nextLine.from;
+		}
+		return view.state.doc.length;
+	}
+	return view.state.doc.length;
+}
+	if (openSection) {
+		diagnostics.push(sectionDiagnostic(openSection));
+	}
+
+	return diagnostics;
+}, { delay: 0 });
+
+function sectionDiagnostic(section: { endDirective: string; lineFrom: number; lineTo: number; insertionAt: number; insertionTo: number }): Diagnostic {
+	return {
+		from: section.lineFrom,
+		to: section.lineTo,
+		severity: 'warning',
+		message: `Falta cerrar esta sección con {${section.endDirective}}.`,
+		actions: [{
+			name: `Insertar {${section.endDirective}}`,
+			apply: (view, from, to) => {
+				const previousCharacter = section.insertionAt > 0
+					? view.state.doc.sliceString(section.insertionAt - 1, section.insertionAt)
+					: '';
+				const needsLeadingNewline = previousCharacter !== '\n';
+				const insertion = `${needsLeadingNewline ? '\n' : ''}{${section.endDirective}}${section.insertionTo < view.state.doc.length ? '\n' : ''}`;
+				view.dispatch({ changes: { from: section.insertionAt, to: section.insertionTo, insert: insertion } });
+			},
+		}],
+	};
+}
 
 /** Suggests explicit, canonical ChordPro suffixes without changing valid input automatically. */
 export const chordNotationLinter = linter((view: EditorView): Diagnostic[] => {
