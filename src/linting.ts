@@ -1,7 +1,26 @@
 import { Diagnostic, linter } from '@codemirror/lint';
+import { Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { ChordProParser } from '@chordproject/parser';
 import { findChordNotationReplacements } from './chordNotation';
+
+export interface LintLabels {
+	duplicateDirective: (directive: string, firstLine: number) => string;
+	parserWarning: (warning: { code: string; message: string; params: Record<string, string> }) => string;
+	sectionMessage: (endDirective: string) => string;
+	sectionAction: (endDirective: string) => string;
+	chordNotationMessage: (replacement: string, reason: string) => string;
+	chordNotationAction: (replacement: string) => string;
+}
+
+export const defaultLintLabels: LintLabels = {
+	duplicateDirective: (directive, firstLine) => `"${directive}" was already defined on line ${firstLine}; this value replaces it.`,
+	parserWarning: (warning) => warning.message,
+	sectionMessage: (endDirective) => `This section must be closed with {${endDirective}}.`,
+	sectionAction: (endDirective) => `Insert {${endDirective}}`,
+	chordNotationMessage: (replacement, reason) => `Use "${replacement}". ${reason}`,
+	chordNotationAction: (replacement) => `Replace with ${replacement}`,
+};
 
 // Directives chordproject-parser treats as singular (last one wins silently, see
 // ChordProParser.parseMetadataTag - title/subtitle/key/capo/duration/tempo/time/year/copyright
@@ -40,9 +59,11 @@ const SECTION_ENDS = new Set(['end_of_chorus', 'eoc', 'end_of_verse', 'eov', 'en
  * appears more than once - the parser silently keeps only the last one, which is easy to miss
  * if you e.g. paste a full song under some test content that already had its own {title:}.
  */
-export const duplicateDirectiveLinter = linter((view: EditorView): Diagnostic[] => {
+export function createLintExtensions(getLabels: () => LintLabels = () => defaultLintLabels): Extension[] {
+	const duplicateDirectiveLinter = linter((view: EditorView): Diagnostic[] => {
 	const diagnostics: Diagnostic[] = [];
 	const firstSeenAtLine = new Map<string, number>();
+	const labels = getLabels();
 
 	for (let lineNumber = 1; lineNumber <= view.state.doc.lines; lineNumber++) {
 		const line = view.state.doc.line(lineNumber);
@@ -62,7 +83,7 @@ export const duplicateDirectiveLinter = linter((view: EditorView): Diagnostic[] 
 			from: line.from,
 			to: line.from + match[0].length,
 			severity: 'warning',
-			message: `"${canonical}" ya se definió en la línea ${firstLine}; este valor la reemplaza.`,
+			message: labels.duplicateDirective(canonical, firstLine),
 		});
 	}
 
@@ -73,9 +94,10 @@ export const duplicateDirectiveLinter = linter((view: EditorView): Diagnostic[] 
  * Surfaces parser warnings next to the ChordPro source line. The client can still
  * render its translated warning summary, while CodeMirror provides local feedback.
  */
-export const parserWarningLinter = linter((view: EditorView): Diagnostic[] => {
+const parserWarningLinter = linter((view: EditorView): Diagnostic[] => {
 	const parser = new ChordProParser();
 	parser.parse(view.state.doc.toString());
+	const labels = getLabels();
 
 	return parser.warnings.flatMap((warning): Diagnostic[] => {
 		if (warning.code === 'empty_sheet') {
@@ -89,13 +111,13 @@ export const parserWarningLinter = linter((view: EditorView): Diagnostic[] => {
 			from: line.from,
 			to: line.to,
 			severity: 'warning',
-			message: warning.message,
+			message: labels.parserWarning(warning),
 		}];
 	});
 }, { delay: 0 });
 
 /** Offers a one-click closing directive for sections left open while drafting. */
-export const unclosedSectionLinter = linter((view: EditorView): Diagnostic[] => {
+const unclosedSectionLinter = linter((view: EditorView): Diagnostic[] => {
 	const diagnostics: Diagnostic[] = [];
 	let openSection: { endDirective: string; lineFrom: number; lineTo: number; insertionAt: number; insertionTo: number } | null = null;
 	let sectionHasContent = false;
@@ -109,7 +131,7 @@ export const unclosedSectionLinter = linter((view: EditorView): Diagnostic[] => 
 			if (openSection) {
 				openSection.insertionAt = line.from;
 				openSection.insertionTo = line.from;
-				diagnostics.push(sectionDiagnostic(openSection));
+				diagnostics.push(sectionDiagnostic(openSection, getLabels()));
 			}
 			openSection = {
 				endDirective: SECTION_STARTS[directive],
@@ -131,7 +153,7 @@ export const unclosedSectionLinter = linter((view: EditorView): Diagnostic[] => 
 		if (openSection && directive) {
 			openSection.insertionAt = line.from;
 			openSection.insertionTo = line.from;
-			diagnostics.push(sectionDiagnostic(openSection));
+			diagnostics.push(sectionDiagnostic(openSection, getLabels()));
 			openSection = null;
 			sectionHasContent = false;
 			continue;
@@ -144,7 +166,7 @@ export const unclosedSectionLinter = linter((view: EditorView): Diagnostic[] => 
 				openSection.insertionTo = nextDirective
 					? nextNonBlankDirectiveLine(view, lineNumber)
 					: line.from;
-				diagnostics.push(sectionDiagnostic(openSection));
+				diagnostics.push(sectionDiagnostic(openSection, getLabels()));
 				openSection = null;
 				sectionHasContent = false;
 			}
@@ -183,20 +205,20 @@ function nextNonBlankDirectiveLine(view: EditorView, lineNumber: number): number
 	return view.state.doc.length;
 }
 	if (openSection) {
-		diagnostics.push(sectionDiagnostic(openSection));
+		diagnostics.push(sectionDiagnostic(openSection, getLabels()));
 	}
 
 	return diagnostics;
 }, { delay: 0 });
 
-function sectionDiagnostic(section: { endDirective: string; lineFrom: number; lineTo: number; insertionAt: number; insertionTo: number }): Diagnostic {
+function sectionDiagnostic(section: { endDirective: string; lineFrom: number; lineTo: number; insertionAt: number; insertionTo: number }, labels: LintLabels): Diagnostic {
 	return {
 		from: section.lineFrom,
 		to: section.lineTo,
 		severity: 'warning',
-		message: `Falta cerrar esta sección con {${section.endDirective}}.`,
+		message: labels.sectionMessage(section.endDirective),
 		actions: [{
-			name: `Insertar {${section.endDirective}}`,
+			name: labels.sectionAction(section.endDirective),
 			apply: (view, from, to) => {
 				const previousCharacter = section.insertionAt > 0
 					? view.state.doc.sliceString(section.insertionAt - 1, section.insertionAt)
@@ -210,16 +232,17 @@ function sectionDiagnostic(section: { endDirective: string; lineFrom: number; li
 }
 
 /** Suggests explicit, canonical ChordPro suffixes without changing valid input automatically. */
-export const chordNotationLinter = linter((view: EditorView): Diagnostic[] => {
+const chordNotationLinter = linter((view: EditorView): Diagnostic[] => {
 	const diagnostics: Diagnostic[] = [];
+	const labels = getLabels();
 	for (const replacement of findChordNotationReplacements(view.state.doc.toString())) {
 		diagnostics.push({
 			from: replacement.from,
 			to: replacement.to,
 			severity: 'info',
-			message: `Usa "${replacement.replacement}". ${replacement.reason}`,
+			message: labels.chordNotationMessage(replacement.replacement, replacement.reason),
 			actions: [{
-				name: `Reemplazar por ${replacement.replacement}`,
+				name: labels.chordNotationAction(replacement.replacement),
 				apply: (targetView, actionFrom, actionTo) => {
 					targetView.dispatch({ changes: { from: actionFrom, to: actionTo, insert: `[${replacement.replacement}]` } });
 				},
@@ -229,3 +252,6 @@ export const chordNotationLinter = linter((view: EditorView): Diagnostic[] => {
 
 	return diagnostics;
 });
+
+	return [duplicateDirectiveLinter, parserWarningLinter, unclosedSectionLinter, chordNotationLinter];
+}

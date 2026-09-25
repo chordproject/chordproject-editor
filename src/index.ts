@@ -6,7 +6,7 @@ export { getChordCompletionPriorities } from './autocomplete/chords';
 import { basicSetup } from './extensions';
 import { chordProFolding } from './folding';
 import { chordPro } from './language';
-import { chordNotationLinter, duplicateDirectiveLinter, parserWarningLinter, unclosedSectionLinter } from './linting';
+import { createLintExtensions, defaultLintLabels, LintLabels } from './linting';
 import { ChordNotationSuggestion, findChordNotationReplacements, getChordNotationSuggestions, normalizeChordNotationText } from './chordNotation';
 import { themeExtension, ThemeName } from './themes';
 import { createSearchPanel, SearchLabels } from './search-panel';
@@ -14,6 +14,7 @@ import { createSearchPanel, SearchLabels } from './search-panel';
 export type { ThemeName } from './themes';
 export type { ChordNotationSuggestion } from './chordNotation';
 export type { SearchLabels } from './search-panel';
+export type { LintLabels } from './linting';
 export { getChordNotationSuggestions, normalizeChordNotationText } from './chordNotation';
 
 export interface ChordProEditorOptions {
@@ -29,6 +30,7 @@ export interface ChordProEditorOptions {
 	onFocus?: () => void;
 	onBlur?: () => void;
 	searchLabels?: () => SearchLabels;
+	lintLabels?: () => LintLabels;
 }
 
 export interface ChordProEditor {
@@ -47,6 +49,8 @@ export interface ChordProEditor {
 	getChordNotationSuggestions(): ChordNotationSuggestion[];
 	/** Replaces every suggested chord notation in one undoable CodeMirror transaction. */
 	normalizeChordNotation(): ChordNotationSuggestion[];
+	/** Re-runs diagnostics, for example after changing their language. */
+	refreshLint(): void;
 	focus(): void;
 	destroy(): void;
 }
@@ -63,6 +67,7 @@ export function createChordProEditor(options: ChordProEditorOptions): ChordProEd
 			(update.view.hasFocus ? options.onFocus : options.onBlur)?.();
 		}
 	});
+	const lintExtensions = createLintExtensions(options.lintLabels ?? (() => defaultLintLabels));
 
 	const state = EditorState.create({
 		doc: options.doc ?? '',
@@ -70,10 +75,7 @@ export function createChordProEditor(options: ChordProEditorOptions): ChordProEd
 			basicSetup(),
 			chordPro(),
 			chordProFolding,
-			duplicateDirectiveLinter,
-			parserWarningLinter,
-			unclosedSectionLinter,
-			chordNotationLinter,
+			...lintExtensions,
 			chordProAutocomplete(),
 			themeCompartment.of(themeExtension(options.theme ?? 'light')),
 			search({ top: true, createPanel: (view) => createSearchPanel(view, options.searchLabels?.()) }),
@@ -116,6 +118,7 @@ export function createChordProEditor(options: ChordProEditorOptions): ChordProEd
 			}
 			return normalization.suggestions;
 		},
+		refreshLint: () => view.dispatch({}),
 		focus: () => view.focus(),
 		destroy: () => view.destroy(),
 	};

@@ -1,5 +1,38 @@
 import { Completion, snippetCompletion } from '@codemirror/autocomplete';
 
+function sectionShortcut(startDirective: string, endDirective: string, label: string, detail: string): Completion {
+	return {
+		label,
+		type: 'directive',
+		detail,
+		apply: (view, completion, from, to) => {
+			const line = view.state.doc.lineAt(from);
+			let closingAt = view.state.doc.length;
+
+			for (let lineNumber = line.number + 1; lineNumber <= view.state.doc.lines; lineNumber++) {
+				const nextLine = view.state.doc.line(lineNumber);
+				if (!nextLine.text.trim() || /^\s*\{\s*[A-Za-z_][\w]*\b/.test(nextLine.text)) {
+					closingAt = nextLine.from;
+					break;
+				}
+			}
+
+			const opening = `{${startDirective}}`;
+			const previousCharacter = closingAt > 0
+				? view.state.doc.sliceString(closingAt - 1, closingAt)
+				: '';
+			const closing = `${previousCharacter && previousCharacter !== '\n' ? '\n' : ''}{${endDirective}}\n`;
+			view.dispatch({
+				changes: [
+					{ from, to, insert: opening },
+					{ from: closingAt, insert: closing },
+				],
+				selection: { anchor: from + opening.length },
+			});
+		},
+	};
+}
+
 // These snippets cover commonly used directives; print-only directives and features handled by
 // the client, such as transposition and chord diagrams, are intentionally left out.
 export const CHORDPRO_SNIPPETS: readonly Completion[] = [
@@ -29,28 +62,28 @@ export const CHORDPRO_SNIPPETS: readonly Completion[] = [
 		label: 'chorus',
 		type: 'directive',
 	}),
-	snippetCompletion('{start_of_chorus}', { label: 'soc', type: 'directive', detail: 'start_of_chorus' }),
+	sectionShortcut('start_of_chorus', 'end_of_chorus', 'soc', 'start_of_chorus'),
 	snippetCompletion('{end_of_chorus}', { label: 'eoc', type: 'directive', detail: 'end_of_chorus' }),
 
 	snippetCompletion('{start_of_verse: ${Verse} ${1}}\n${lyrics}\n{end_of_verse}', {
 		label: 'verse',
 		type: 'directive',
 	}),
-	snippetCompletion('{start_of_verse}', { label: 'sov', type: 'directive', detail: 'start_of_verse' }),
+	sectionShortcut('start_of_verse', 'end_of_verse', 'sov', 'start_of_verse'),
 	snippetCompletion('{end_of_verse}', { label: 'eov', type: 'directive', detail: 'end_of_verse' }),
 
 	snippetCompletion('{start_of_bridge: ${Bridge}}\n${lyrics}\n{end_of_bridge}', {
 		label: 'bridge',
 		type: 'directive',
 	}),
-	snippetCompletion('{start_of_bridge}', { label: 'sob', type: 'directive', detail: 'start_of_bridge' }),
+	sectionShortcut('start_of_bridge', 'end_of_bridge', 'sob', 'start_of_bridge'),
 	snippetCompletion('{end_of_bridge}', { label: 'eob', type: 'directive', detail: 'end_of_bridge' }),
 
 	snippetCompletion(
 		'{start_of_tab}\ne|-${1}--------------------------------|\nB|----------------------------------|\nG|----------------------------------|\nD|----------------------------------|\nA|----------------------------------|\nE|----------------------------------|\n{end_of_tab}',
 		{ label: 'tab', type: 'directive' }
 	),
-	snippetCompletion('{start_of_tab}', { label: 'sot', type: 'directive', detail: 'start_of_tab' }),
+	sectionShortcut('start_of_tab', 'end_of_tab', 'sot', 'start_of_tab'),
 	snippetCompletion('{end_of_tab}', { label: 'eot', type: 'directive', detail: 'end_of_tab' }),
 
 	snippetCompletion('{define: ${Am} base-fret ${1} frets ${0 0 0 0 0 0} fingers ${0 0 0 0 0 0}}', {
