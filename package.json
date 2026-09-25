@@ -1,6 +1,6 @@
 {
 	"name": "@chordproject/editor",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"type": "module",
 	"description": "A CodeMirror 6 based editor for ChordPro songs.",
 	"module": "dist/index.js",
