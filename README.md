@@ -1,15 +1,20 @@
 # ChordPro Editor
 
-A CodeMirror 6 based editor for ChordPro songs. **~26 KB** (~7 KB gzipped).
+A CodeMirror 6 editor for ChordPro songs, with syntax highlighting, completions, folding,
+search and replace, and inline diagnostics.
 
 **Part of [ChordProject](https://chordproject.com/)**
 
 ## Overview
 
-A CodeMirror 6 editor that highlights ChordPro syntax (directives, chords, comments, tab blocks),
-aligned with the official
+A standalone CodeMirror 6 editor that understands ChordPro directives, chords, comments, and tab
+blocks. Its syntax support follows the official
 [ChordPro directives](https://www.chordpro.org/chordpro/chordpro-directives/) and
 [chord](https://www.chordpro.org/chordpro/chordpro-chords/) specification.
+
+The editor also lints parser warnings, repeated single-value metadata, unclosed sections, and
+valid but non-canonical chord spellings. Hosts can provide localized labels for diagnostics and
+the search panel.
 
 ## Usage
 
@@ -49,6 +54,8 @@ standalone use. Ships with its own TypeScript types, no `@types/*` package neede
 | `extensions` | `Extension[]?` | Extra CodeMirror 6 extensions to append (escape hatch). |
 | `onChange` | `(value: string) => void` | Called with the full document on every change. |
 | `onFocus` / `onBlur` | `() => void` | Called when the editor gains/loses focus. |
+| `searchLabels` | `() => SearchLabels` | Supplies translated labels for the search and replace panel. |
+| `lintLabels` | `() => LintLabels` | Supplies translated labels for all inline diagnostics. |
 
 The returned `ChordProEditor` handle:
 
@@ -59,8 +66,10 @@ The returned `ChordProEditor` handle:
 | `setTheme('light' \| 'dark')` | Swaps the theme without recreating the editor. |
 | `insertChord()` | Inserts `"[]"` at the cursor (or wraps the selection) and opens chord suggestions - no keyboard shortcut needed, works from a button/tap. |
 | `openCompletionList()` | Opens the completion list (chords or snippets, depending on cursor position) without any keyboard shortcut. |
+| `openSearch()` | Opens the search and replace panel. |
 | `getChordNotationSuggestions()` | Returns grouped suggestions for valid non-canonical chord spellings, such as `Asus` to `Asus4`. |
 | `normalizeChordNotation()` | Replaces all suggested spellings in one undoable CodeMirror transaction and returns the applied groups. |
+| `refreshLint()` | Re-runs diagnostics, for example after changing the active language. |
 | `focus()` / `destroy()` | Focus the editor / tear it down and release its DOM node. |
 
 Multiple independent `createChordProEditor()` instances can coexist on the same page.
@@ -89,13 +98,20 @@ annotations, already canonical chords, and historical combined tokens.
 - Chord autocomplete (common chord vocabulary, boosted by chords already used in the song)
 - Directive snippets, expandable with `Tab` (see table below)
 - Folding for `{start_of_x}`/`{end_of_x}` blocks
-- Parser warnings displayed on their source line for malformed directives, invalid metadata, and malformed chords
-- Warns (non-blocking) when a "once per song" directive like `{title:}` or `{key:}` is repeated
+- Inline parser diagnostics for malformed directives, invalid metadata, and malformed chords
+- Non-blocking warnings for repeated single-value metadata and unclosed sections, with an action to insert the missing closing directive
 - Suggests canonical spellings for valid legacy abbreviations such as `Asus` to `Asus4`, `AM7` to `Amaj7`, and `D+` to `Daug`, with an individual replacement action
 - Exposes `getChordNotationSuggestions()` and `normalizeChordNotationText(content)` for hosts that want to preview or apply grouped normalization
+- Built-in search and replace, also available programmatically through `openSearch()`
 - No fixed keyboard shortcut requirement: chords and snippets suggest themselves as you type,
-  and `insertChord()`/`openCompletionList()` work from a button/tap - useful since `Ctrl+Space`
-  and its usual alternates are unreliable across OS/keyboard layouts
+  and `insertChord()`/`openCompletionList()` can be called from a button or touch control
+
+### Localization
+
+Provide `searchLabels` and `lintLabels` callbacks when creating the editor to translate the
+search panel and lint messages. Call `refreshLint()` after changing the active language so
+existing diagnostics are regenerated with the new labels. The exported `SearchLabels` and
+`LintLabels` types describe the supported strings.
 
 ### Snippets
 
