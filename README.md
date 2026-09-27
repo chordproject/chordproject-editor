@@ -96,9 +96,10 @@ annotations, already canonical chords, and historical combined tokens.
 
 Publishing uses npm Trusted Publishing from GitHub Actions; no npm token is stored in GitHub.
 In npm package settings, add a GitHub Actions trusted publisher for organization `chordproject`,
-repository `chordproject-editor`, and workflow file `publish.yml`. After merging a version bump,
-push a matching tag such as `v1.1.2`. The workflow verifies the tag against `package.json`, runs
-the build and tests, then publishes to npmjs.org using OIDC.
+repository `chordproject-editor`, and workflow file `publish.yml`. After merging changes, run
+`npm run release` for a patch, or `npm run release:minor` / `npm run release:major`. These
+commands run tests, bump the version, commit and tag it, then push; GitHub Actions publishes to
+npmjs.org using OIDC. The tag must match `package.json`.
 
 ## Features
 
