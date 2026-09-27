@@ -92,6 +92,14 @@ $ npm test
 The test suite covers grouped chord-notation suggestions and safe normalization of slash chords,
 annotations, already canonical chords, and historical combined tokens.
 
+## Publishing
+
+Publishing uses npm Trusted Publishing from GitHub Actions; no npm token is stored in GitHub.
+In npm package settings, add a GitHub Actions trusted publisher for organization `chordproject`,
+repository `chordproject-editor`, and workflow file `publish.yml`. After merging a version bump,
+push a matching tag such as `v1.1.2`. The workflow verifies the tag against `package.json`, runs
+the build and tests, then publishes to npmjs.org using OIDC.
+
 ## Features
 
 - Syntax highlighting: directives (known/custom/invalid), chords, comments, tab blocks, `{define:}`

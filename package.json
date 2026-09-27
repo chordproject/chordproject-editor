@@ -30,7 +30,10 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/chordproject/chordproject-editor"
+		"url": "https://github.com/chordproject/chordproject-editor.git"
+	},
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org/"
 	},
 	"author": "ChordProject (http://chordproject.com)",
 	"license": "AGPL-3.0-only",
