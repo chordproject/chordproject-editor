@@ -54,6 +54,27 @@ const SECTION_STARTS: Record<string, string> = {
 };
 const SECTION_ENDS = new Set(['end_of_chorus', 'eoc', 'end_of_verse', 'eov', 'end_of_bridge', 'eob', 'end_of_tab', 'eot']);
 
+function hasExplicitSectionEndAhead(view: EditorView, lineNumber: number, endDirective: string): boolean {
+	for (let nextLineNumber = lineNumber + 1; nextLineNumber <= view.state.doc.lines; nextLineNumber++) {
+		const nextLine = view.state.doc.line(nextLineNumber);
+		if (!nextLine.text.trim()) {
+			continue;
+		}
+
+		const directive = nextLine.text.match(DIRECTIVE_LINE)?.[1].toLowerCase();
+		if (!directive) {
+			continue;
+		}
+
+		return directive === endDirective || (endDirective === 'end_of_chorus' && directive === 'eoc')
+			|| (endDirective === 'end_of_verse' && directive === 'eov')
+			|| (endDirective === 'end_of_bridge' && directive === 'eob')
+			|| (endDirective === 'end_of_tab' && directive === 'eot');
+	}
+
+	return false;
+}
+
 /**
  * Warns (without blocking anything) when a "singular" directive like {title:} or {key:}
  * appears more than once - the parser silently keeps only the last one, which is easy to miss
@@ -160,6 +181,10 @@ const unclosedSectionLinter = linter((view: EditorView): Diagnostic[] => {
 		}
 
 		if (openSection && !line.text.trim()) {
+			if (hasExplicitSectionEndAhead(view, lineNumber, openSection.endDirective)) {
+				continue;
+			}
+
 			const nextDirective = nextNonBlankDirective(view, lineNumber);
 			if (sectionHasContent) {
 				openSection.insertionAt = line.from;
