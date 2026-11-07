@@ -1,4 +1,4 @@
-import { EditorState, Extension } from '@codemirror/state';
+import { EditorState, Extension, Prec } from '@codemirror/state';
 import {
 	EditorView,
 	keymap,
@@ -61,6 +61,12 @@ export function basicSetup(): Extension[] {
 		closeBrackets(),
 		chordBracketInputHandler,
 		EditorState.allowMultipleSelections.of(true),
+		Prec.highest(keymap.of([
+			{ key: 'Ctrl-Space', run: chordAwareCompletion },
+			{ mac: 'Cmd-Shift-Space', run: chordAwareCompletion },
+			{ mac: 'Alt-`', run: chordAwareCompletion },
+			{ mac: 'Alt-i', run: chordAwareCompletion },
+		])),
 		keymap.of([
 			// Insert a complete ChordPro token before opening suggestions so an unfinished "["
 			// is never momentarily interpreted as invalid song content.
@@ -71,12 +77,6 @@ export function basicSetup(): Extension[] {
 			...foldKeymap,
 			...lintKeymap,
 			...searchKeymap,
-			// Override completionKeymap's Ctrl-Space/Option-`/Option-i (same keys, listed first so
-			// they take precedence) to be chord-aware instead of plain startCompletion.
-			{ key: 'Ctrl-Space', run: chordAwareCompletion },
-			{ mac: 'Cmd-Shift-Space', run: chordAwareCompletion },
-			{ mac: 'Alt-`', run: chordAwareCompletion },
-			{ mac: 'Alt-i', run: chordAwareCompletion },
 			...completionKeymap,
 			// Tab accepts a completion/snippet field when the popup is open.
 			{
